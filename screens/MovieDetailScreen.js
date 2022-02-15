@@ -3,15 +3,17 @@ import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { axiosInstance } from '../utils/axios';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { Button, Icon, Image } from 'react-native-elements';
-import { truncateText } from '../utils/lib';
+import { getLanguage, truncateText } from '../utils/lib';
 import Carousel from 'react-native-snap-carousel';
 import ModalCustom from '../components/ModalCustom';
 import moment from 'moment';
-
+import YoutubePlayer from 'react-native-youtube-iframe';
 const MovieDetailScreen = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
+  const [videos, setVideos] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [openTrailer, setOpenTrailer] = useState(false);
   const [choosedPerson, setChoosedPerson] = useState(null);
   const { movieId, original_title } = route.params;
   useLayoutEffect(() => {
@@ -19,6 +21,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
       try {
         const fetchedMovie = await axiosInstance.get(`/movie/${movieId}`)
         const fetchedCredits = await axiosInstance.get(`/movie/${movieId}/credits`)
+        const fetchedvideos = await axiosInstance.get(`/movie/${movieId}/videos`)
         console.log('movie', fetchedMovie.data)
         navigation.setOptions({
           title: original_title,
@@ -28,6 +31,8 @@ const MovieDetailScreen = ({ navigation, route }) => {
         else setMovie(null)
         if (fetchedCredits) setCredits(fetchedCredits.data)
         else setCredits(null)
+        if (fetchedvideos) setVideos(fetchedvideos.data.results)
+        else setVideos(null)
       } catch (error) {
         console.log("error", error.message)
       }
@@ -42,7 +47,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   if (!movie) return <Text>Loading....</Text>
   return (
     <ScrollView style={{ backgroundColor: 'white', }}>
-      <HeroSection movie={movie}></HeroSection>
+      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer}></HeroSection>
       <View style={styles.container}>
         <RelateInformation movie={movie}></RelateInformation>
         <Overview movie={movie}></Overview>
@@ -50,6 +55,19 @@ const MovieDetailScreen = ({ navigation, route }) => {
         <MainCrewTeam crews={credits?.crew} handleChoosePerson={handleChoosePerson}></MainCrewTeam>
         <Companies companies={movie?.production_companies}></Companies>
       </View>
+
+      <ModalCustom modalVisible={openTrailer} setModalVisible={setOpenTrailer}>
+        <ScrollView>
+          {videos &&
+            videos?.map((video) => (
+              <YoutubePlayer
+                height={300}
+                videoId={video?.key}
+              />
+            ))
+          }
+        </ScrollView>
+      </ModalCustom>
       <ModalCustom modalVisible={modalVisible} setModalVisible={setModalVisible}>
         <ScrollView
           style={{
@@ -122,7 +140,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
     </ScrollView>
   )
 }
-const HeroSection = ({ movie }) => {
+const HeroSection = ({ movie, setOpenTrailer }) => {
   return (
     <View>
       <Image
@@ -135,13 +153,13 @@ const HeroSection = ({ movie }) => {
         }}
       ></Image>
       <Text style={styles.movieTitle}>{movie?.original_title}</Text>
-      <View style={styles.playBtn}>
+      <Pressable style={styles.playBtn} onPress={() => setOpenTrailer(true)}>
         <Icon
           name="play"
           type="font-awesome-5"
           color="white"
         ></Icon>
-      </View>
+      </Pressable>
     </View>
   )
 }
@@ -175,7 +193,7 @@ const RelateInformation = ({ movie }) => {
           paddingHorizontal: 10,
         }}>
         <Text style={styles.relateInfoTitle}>Language</Text>
-        <Text style={styles.relateInfoText}>2h15m</Text>
+        <Text style={styles.relateInfoText}>{getLanguage(movie?.original_language)}</Text>
       </View>
     </View>
   )

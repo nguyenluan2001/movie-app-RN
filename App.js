@@ -72,7 +72,7 @@ export default function App() {
                   style={{
                     color: focused ? 'blue' : 'black'
                   }}
-                >Home</Text>
+                >More</Text>
               },
               tabBarShowLabel: true
             }

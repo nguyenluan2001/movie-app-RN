@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
-    height: '50%',
+    height: '60%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
