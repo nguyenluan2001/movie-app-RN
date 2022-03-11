@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import MovieGrid from '../components/MovieGrid';
 import MovieItem from '../components/MovieItem';
 import MovieList from '../components/MovieList';
+import ShowMovies from '../components/ShowMovies';
 import { fetchMovieGenre, fetchTVGenre } from '../redux/slices/genre';
 import { axiosInstance } from '../utils/axios'
 
@@ -44,30 +45,9 @@ function HomeScreen({ navigation }) {
         dispatch(fetchTVGenre());
     }, [])
     return (
-        <ScrollView>
-            <View 
-                style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    paddingHorizontal: 5
-                }}
-            >
-                <Icon
-                    raised
-                    name='menu'
-                    type='entypo'
-                    color={layout === 1 ? '#f50' : 'gray'}
-                    onPress={() => setLayout(1)} />
-                <Icon
-                    raised
-                    name='grid'
-                    type='entypo'
-                    color={layout === 2 ? '#f50' : 'gray'}
-                    onPress={() => setLayout(2)} />
-            </View>
-            {layout === 1 && <MovieList movies={movies} navigation={navigation}></MovieList>}
-            {layout === 2 && <MovieGrid movies={movies} navigation={navigation}></MovieGrid>}
-        </ScrollView>
+        <>
+            <ShowMovies movies={movies} navigation={navigation}></ShowMovies>
+        </>
     )
 }
 

@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Modal, Button } from 'react-native'
 import React from 'react'
 import { Icon } from 'react-native-elements'
 
-const ModalCustom = ({ modalVisible, setModalVisible, children }) => {
+const ModalCustom = ({ modalVisible, setModalVisible, children, type }) => {
   return (
     <Modal
       animationType="slide"

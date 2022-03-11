@@ -10,6 +10,7 @@ import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import { Icon } from 'react-native-elements';
 import HomeNavigator from './navigators/HomeNavigator';
+import SearchNavigator from './navigators/SearchNavigator';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +40,7 @@ export default function App() {
             }
           } 
           />
-          <Tab.Screen name="Search" component={SearchScreen} options={
+          <Tab.Screen name="Search" component={SearchNavigator} options={
             {
               tabBarIcon: ({ focused }) => {
                 return <Icon
@@ -55,7 +56,8 @@ export default function App() {
                   }}
                 >Search</Text>
               },
-              tabBarShowLabel: true
+              tabBarShowLabel: true,
+              headerShown: false
             }
           } />
           <Tab.Screen name="More" component={MoreScreen} options={
