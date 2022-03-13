@@ -19,7 +19,7 @@ const genre = createSlice({
 export const {getMovieGenres, getTVGenres} = genre.actions;
 const fetchMovieGenre = () => async (dispatch) => {
     const genres = await axiosInstance.get("/genre/movie/list")
-    console.log(genres.data.genres)
+    // console.log(genres.data.genres)
     if(genres) {
         dispatch(getMovieGenres(genres.data.genres))
     } else {

@@ -35,19 +35,24 @@ const MovieItem = ({ movie, navigation }) => {
             >
                 <View>
                     <View style={{ flexDirection: 'row' }}>
-                        <Text style={styles.title}>{movie?.original_title}</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('MovieDetail', {
+                            movieId: movie.id,
+                            original_title: movie?.original_title
+                        })}>
+                            <Text style={styles.title}>{movie?.original_title}</Text>
+                        </TouchableOpacity>
                     </View>
                     <View
                         style={{
                             flexDirection: 'row'
                         }}
                     >
-                        <Text>{getYearRelease(movie?.release_date)} | </Text>
-                        <Text>{getLanguage(movie?.original_language)}</Text>
+                        <Text>{movie?.release_date ? getYearRelease(movie?.release_date) : "N/A"} | </Text>
+                        <Text>{movie?.original_language ? getLanguage(movie?.original_language) : "N/A"}</Text>
                     </View>
                     {genres && <View style={styles.listGenres}>
-                        {genres?.map((item) => <View style={styles.genreItem}>
-                            <Text style={{ color: 'white' }}>{item.name}</Text>
+                        {genres?.map((item, index) => <View style={styles.genreItem} key={index}>
+                            <Text style={{ color: 'white' }}  >{item.name}</Text>
                         </View>)}
                     </View>}
                 </View>

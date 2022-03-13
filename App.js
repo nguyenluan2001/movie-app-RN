@@ -11,6 +11,8 @@ import { store } from './redux/store';
 import { Icon } from 'react-native-elements';
 import HomeNavigator from './navigators/HomeNavigator';
 import SearchNavigator from './navigators/SearchNavigator';
+import AccountNavigator from './navigators/AccountNavigator';
+import LoginScreen from './screens/LoginScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -25,13 +27,13 @@ export default function App() {
                 return <Icon
                   name="home"
                   type="entypo"
-                  color={focused ? 'blue' : 'black'}
+                  color={focused ? '#ff725b' : 'black'}
                 ></Icon>
               },
               tabBarLabel: ({ focused }) => {
                 return <Text
                   style={{
-                    color: focused ? 'blue' : 'black'
+                    color: focused ? '#ff725b' : 'black'
                   }}
                 >Home</Text>
               },
@@ -46,13 +48,13 @@ export default function App() {
                 return <Icon
                   name="search"
                   type="font-awesome"
-                  color={focused ? 'blue' : 'black'}
+                  color={focused ? '#ff725b' : 'black'}
                 ></Icon>
               },
               tabBarLabel: ({ focused }) => {
                 return <Text
                   style={{
-                    color: focused ? 'blue' : 'black'
+                    color: focused ? '#ff725b' : 'black'
                   }}
                 >Search</Text>
               },
@@ -60,23 +62,49 @@ export default function App() {
               headerShown: false
             }
           } />
-          <Tab.Screen name="More" component={MoreScreen} options={
+          {/* <Tab.Screen name="More" component={MoreScreen} options={
             {
               tabBarIcon: ({ focused }) => {
                 return <Icon
                   name="list"
                   type="foundation"
-                  color={focused ? 'blue' : 'black'}
+                  color={focused ? '#ff725b' : 'black'}
                 ></Icon>
               },
               tabBarLabel: ({ focused }) => {
                 return <Text
                   style={{
-                    color: focused ? 'blue' : 'black'
+                    color: focused ? '#ff725b' : 'black'
                   }}
                 >More</Text>
               },
               tabBarShowLabel: true
+            }
+          } /> */}
+          <Tab.Screen name="AccountTab" component={AccountNavigator} options={
+            {
+              tabBarIcon: ({ focused }) => {
+                return <Icon
+                  name="user"
+                  type="font-awesome-5"
+                  color={focused ? '#ff725b' : 'black'}
+                ></Icon>
+              },
+              tabBarLabel: ({ focused }) => {
+                return <Text
+                  style={{
+                    color: focused ? '#ff725b' : 'black'
+                  }}
+                >Account</Text>
+              },
+              tabBarShowLabel: true,
+              headerShown: false
+            }
+          } />
+          <Tab.Screen name="Login" component={LoginScreen} options={
+            {
+
+              tabBarButton: props => null,
             }
           } />
         </Tab.Navigator>

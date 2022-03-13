@@ -8,6 +8,10 @@ import Carousel from 'react-native-snap-carousel';
 import ModalCustom from '../components/ModalCustom';
 import moment from 'moment';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import Loading from '../components/Loading';
+import LottieView from 'lottie-react-native';
+import { collection, addDoc, getDoc, query, where, getDocs } from "firebase/firestore";
+import { db } from "../utils/firebase";
 const MovieDetailScreen = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
@@ -15,6 +19,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [openTrailer, setOpenTrailer] = useState(false);
   const [choosedPerson, setChoosedPerson] = useState(null);
+  const [isLiked, setIsLiked] = useState(false);
   const { movieId, original_title } = route.params;
   useLayoutEffect(() => {
     const fetchMovie = async () => {
@@ -22,7 +27,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
         const fetchedMovie = await axiosInstance.get(`/movie/${movieId}`)
         const fetchedCredits = await axiosInstance.get(`/movie/${movieId}/credits`)
         const fetchedvideos = await axiosInstance.get(`/movie/${movieId}/videos`)
-        console.log('movie', fetchedMovie.data)
+        // console.log('movie', fetchedMovie.data)
         navigation.setOptions({
           title: original_title,
           backgroundColor: 'white'
@@ -39,15 +44,32 @@ const MovieDetailScreen = ({ navigation, route }) => {
     }
     fetchMovie()
   }, [navigation, route])
+  useEffect(() => {
+    const getFavoriteMovie = async() => {
+      const favoriteMoviesRef = collection(db, "favoriteMovies");
+      const q = query(favoriteMoviesRef, where("id", "==", movieId));
+      const querySnapshot = await getDocs(q);
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log("data", data)
+        if(parseInt(data.id) === parseInt(movieId)) setIsLiked(true)
+        else setIsLiked(false)
+      });
+    }
+    getFavoriteMovie()
+  }, [route])
   const handleChoosePerson = async (person) => {
     let fetchedPerson = await axiosInstance.get(`/person/${person.id}`)
     setChoosedPerson(fetchedPerson.data)
     setModalVisible(true)
   }
-  if (!movie) return <Text>Loading....</Text>
+  // if (!movie) return <Text>Loading....</Text>
+  if (!movie) return <Loading></Loading>
   return (
     <ScrollView style={{ backgroundColor: 'white', }}>
-      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer}></HeroSection>
+
+      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer} isLiked={isLiked} setIsLiked={setIsLiked}></HeroSection>
       <View style={styles.container}>
         <RelateInformation movie={movie}></RelateInformation>
         <Overview movie={movie}></Overview>
@@ -140,7 +162,34 @@ const MovieDetailScreen = ({ navigation, route }) => {
     </ScrollView>
   )
 }
-const HeroSection = ({ movie, setOpenTrailer }) => {
+const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked }) => {
+  const [isLiking, setIsLiking] = useState(false);
+  const handleLikeMovie = () => {
+    setIsLiking(true)
+    // setTimeout(() => {
+    //   setIsLiking(false)
+    //   setIsLiked(true)
+    // }, 1000)
+    addDoc(collection(db, "favoriteMovies"), {
+      id: movie.id,
+      name: movie.original_title,
+    }).then(async (docRef) => {
+      setIsLiking(false)
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        const fetchedData = docSnap.data()
+        if (parseInt(fetchedData.id) === parseInt(movie.id)) {
+          setIsLiked(true)
+        }
+      } else {
+        // doc.data() will be undefined in this case
+        setIsLiked(false)
+        console.log("No such document!");
+      }
+      // console.log("Document written with ID: ", docRef);
+    });
+  }
   return (
     <View>
       <Image
@@ -153,12 +202,31 @@ const HeroSection = ({ movie, setOpenTrailer }) => {
         }}
       ></Image>
       <Text style={styles.movieTitle}>{movie?.original_title}</Text>
+      <Pressable style={styles.likeBtn} onPress={() => handleLikeMovie()}>
+        {isLiking && <LottieView
+          style={{ height: 100 }}
+          source={require('../assets/animations/heart-beat.json')}
+          autoPlay
+          speed={1.5}
+        />}
+        {!isLiking && !isLiked && <Icon
+          name='hearto'
+          type="ant-design"
+          iconStyle={{ color: 'red' }}
+        ></Icon>}
+        {isLiked && <Icon
+          name='heart'
+          type="ant-design"
+          iconStyle={{ color: 'red' }}
+        ></Icon>}
+      </Pressable>
       <Pressable style={styles.playBtn} onPress={() => setOpenTrailer(true)}>
-        <Icon
-          name="play"
-          type="font-awesome-5"
-          color="white"
-        ></Icon>
+        <LottieView
+          style={{ height: 100 }}
+          source={require('../assets/animations/play-button.json')}
+          autoPlay
+          speed={1.5}
+        />
       </Pressable>
     </View>
   )
@@ -423,6 +491,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     bottom: -25
+  },
+  likeBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    left: 10,
+    bottom: -30
   },
   container: {
     padding: 20,
