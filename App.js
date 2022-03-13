@@ -13,6 +13,8 @@ import HomeNavigator from './navigators/HomeNavigator';
 import SearchNavigator from './navigators/SearchNavigator';
 import AccountNavigator from './navigators/AccountNavigator';
 import LoginScreen from './screens/LoginScreen';
+import Toast from 'react-native-toast-message';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -109,6 +111,7 @@ export default function App() {
           } />
         </Tab.Navigator>
       </NavigationContainer>
+      <Toast />
     </Provider>
   );
 }

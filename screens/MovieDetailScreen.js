@@ -1,3 +1,7 @@
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs(['Setting a timer']);
+
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { axiosInstance } from '../utils/axios';
@@ -12,6 +16,9 @@ import Loading from '../components/Loading';
 import LottieView from 'lottie-react-native';
 import { collection, addDoc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../utils/firebase";
+import { useSelector } from 'react-redux';
+import Toast from 'react-native-toast-message';
+
 const MovieDetailScreen = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
@@ -21,6 +28,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   const [choosedPerson, setChoosedPerson] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const { movieId, original_title } = route.params;
+  const user = useSelector(state => state.user)
   useLayoutEffect(() => {
     const fetchMovie = async () => {
       try {
@@ -47,7 +55,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   useEffect(() => {
     const getFavoriteMovie = async() => {
       const favoriteMoviesRef = collection(db, "favoriteMovies");
-      const q = query(favoriteMoviesRef, where("id", "==", movieId));
+      const q = query(favoriteMoviesRef, where("id", "==", movieId), where("user_id", "==", user?.uid ?? ""));
       const querySnapshot = await getDocs(q);
       
       querySnapshot.forEach((doc) => {
@@ -69,7 +77,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   return (
     <ScrollView style={{ backgroundColor: 'white', }}>
 
-      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer} isLiked={isLiked} setIsLiked={setIsLiked}></HeroSection>
+      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer} isLiked={isLiked} setIsLiked={setIsLiked} user={user}></HeroSection>
       <View style={styles.container}>
         <RelateInformation movie={movie}></RelateInformation>
         <Overview movie={movie}></Overview>
@@ -162,33 +170,39 @@ const MovieDetailScreen = ({ navigation, route }) => {
     </ScrollView>
   )
 }
-const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked }) => {
+const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked, user }) => {
   const [isLiking, setIsLiking] = useState(false);
   const handleLikeMovie = () => {
-    setIsLiking(true)
-    // setTimeout(() => {
-    //   setIsLiking(false)
-    //   setIsLiked(true)
-    // }, 1000)
-    addDoc(collection(db, "favoriteMovies"), {
-      id: movie.id,
-      name: movie.original_title,
-    }).then(async (docRef) => {
-      setIsLiking(false)
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
-        const fetchedData = docSnap.data()
-        if (parseInt(fetchedData.id) === parseInt(movie.id)) {
-          setIsLiked(true)
+    if(!user?.uid) {
+      Toast.show({
+        type: 'error',
+        text1: 'Please login 👋👋👋',
+        // text2: 'This is some something 👋'
+      });
+      return false;
+    } else {
+      setIsLiking(true)
+      addDoc(collection(db, "favoriteMovies"), {
+        id: movie.id,
+        name: movie.original_title,
+        user_id: user?.uid
+      }).then(async (docRef) => {
+        setIsLiking(false)
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+          const fetchedData = docSnap.data()
+          if (parseInt(fetchedData.id) === parseInt(movie.id)) {
+            setIsLiked(true)
+          }
+        } else {
+          // doc.data() will be undefined in this case
+          setIsLiked(false)
+          console.log("No such document!");
         }
-      } else {
-        // doc.data() will be undefined in this case
-        setIsLiked(false)
-        console.log("No such document!");
-      }
-      // console.log("Document written with ID: ", docRef);
-    });
+        // console.log("Document written with ID: ", docRef);
+      });
+    }
   }
   return (
     <View>

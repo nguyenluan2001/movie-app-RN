@@ -4,8 +4,7 @@ const user = createSlice({
     initialState: null,
     reducers:{
         getLoginUser:(state, action) => {
-            const {apiKey,displayName, email, phoneNumber, photoURL} = action.payload;
-            return {apiKey,displayName, email, phoneNumber, photoURL};
+            return action.payload;
         }
     }
 })

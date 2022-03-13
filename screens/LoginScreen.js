@@ -34,8 +34,10 @@ const LoginScreen = ({ navigation }) => {
             displayName: user.displayName, 
             email: user.email, 
             phoneNumber: user.phoneNumber, 
-            photoURL: user.phoneNumber
+            photoURL: user.phoneNumber,
+            uid: user.uid
           }
+          // console.log("userData", userData)
           dispatch(getLoginUser(userData))
           setLoginError(null)
           navigation.navigate("Home")
