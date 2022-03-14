@@ -7,7 +7,7 @@ const MovieList = ({movies, navigation}) => {
     <View style={styles.container}>
         {
                 movies && (
-                    movies?.map((movie) => <MovieItem movie={movie} key={movie?.id} navigation={navigation}></MovieItem>)
+                    movies?.map((movie, index) => <MovieItem movie={movie} key={`${movie?.id}_${index}`} navigation={navigation}></MovieItem>)
                 )
             }
     </View>

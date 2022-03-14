@@ -48,7 +48,8 @@ const MovieItem = ({ movie, navigation }) => {
                         }}
                     >
                         <Text>{movie?.release_date ? getYearRelease(movie?.release_date) : "N/A"} | </Text>
-                        <Text>{movie?.original_language ? getLanguage(movie?.original_language) : "N/A"}</Text>
+                        <Text>{!!getLanguage(movie?.original_language) ? getLanguage(movie?.original_language) : "N/A"}</Text>
+                        {/* <Text>{movie?.original_language}</Text> */}
                     </View>
                     {genres && <View style={styles.listGenres}>
                         {genres?.map((item, index) => <View style={styles.genreItem} key={index}>
