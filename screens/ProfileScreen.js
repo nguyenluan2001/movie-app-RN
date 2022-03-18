@@ -84,6 +84,7 @@ const ProfileScreen = ({ navigation }) => {
                 value={formik.values.email}
                 name="email"
                 onChangeText={(value) => formik.setFieldValue('email', value)}
+                disabled={true}
             />
             <Pressable style={styles.logoutContainer} onPress={() => setConfirmLogout(true)}>
                 <Text style={styles.logoutText}>LOGOUT</Text>
