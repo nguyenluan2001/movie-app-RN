@@ -40,6 +40,9 @@ const LoginScreen = ({ navigation }) => {
           // console.log("userData", userData)
           dispatch(getLoginUser(userData))
           setLoginError(null)
+          // formik.setFieldValue("email", '');
+          // formik.setFieldValue("password", '');
+          formik.resetForm();
           navigation.navigate("Home")
           // console.log("user", user)
           // ...
@@ -74,6 +77,7 @@ const LoginScreen = ({ navigation }) => {
           inputContainerStyle={styles.input}
           leftIconContainerStyle={styles.inputIcon}
           // onChangeText={(value) => setKeyWord(value)}
+          value={formik.values.email}
           name="email"
           onChangeText={(value) => formik.setFieldValue('email', value)}
           errorMessage={!!formik?.errors?.email && formik?.errors?.email}
@@ -87,13 +91,15 @@ const LoginScreen = ({ navigation }) => {
           secureTextEntry={true}
           onChangeText={(value) => formik.setFieldValue('password', value)}
           errorMessage={!!formik?.errors?.password && formik?.errors?.password}
+          value={formik.values.password}
+
 
         />
         <Text style={{color: 'red', marginLeft: 20}}>{!!loginError && loginError}</Text>
         <Text style={styles.forgotPass} >Forgot password?</Text>
         <View style={styles.wp_btn}>
           <Button title="Login" onPress={formik.handleSubmit} containerStyle={{...styles.loginBtn, marginRight: 10}}></Button>
-          <Button title="Register" onPress={() => {}} containerStyle={styles.loginBtn}></Button>
+          <Button title="Register" onPress={() => navigation.navigate('Register')} containerStyle={styles.loginBtn}></Button>
         </View>
       </View>
     </SafeAreaView>

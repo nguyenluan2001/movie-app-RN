@@ -5,8 +5,16 @@ const user = createSlice({
     reducers:{
         getLoginUser:(state, action) => {
             return action.payload;
+        },
+        updateProfile:(state, action) => {
+            let {displayName, email} = action.payload;
+            state.displayName = displayName;
+            state.email = email;
+        },
+        logout: () => {
+            return {};
         }
     }
 })
-export const {getLoginUser} = user.actions;
+export const {getLoginUser, logout, updateProfile} = user.actions;
 export default user.reducer;
