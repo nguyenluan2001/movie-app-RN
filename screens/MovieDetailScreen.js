@@ -17,7 +17,7 @@ import LottieView from 'lottie-react-native';
 import { collection, addDoc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useSelector } from 'react-redux';
-import Toast from 'react-native-toast-message';
+import SnackBar from 'react-native-snackbar-component'
 
 const MovieDetailScreen = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
@@ -26,6 +26,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [openTrailer, setOpenTrailer] = useState(false);
   const [choosedPerson, setChoosedPerson] = useState(null);
+  const [notAllowLike, setNotAllowLike] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const { movieId, original_title } = route.params;
   const user = useSelector(state => state.user)
@@ -53,20 +54,26 @@ const MovieDetailScreen = ({ navigation, route }) => {
     fetchMovie()
   }, [navigation, route])
   useEffect(() => {
-    const getFavoriteMovie = async() => {
+    const getFavoriteMovie = async () => {
       const favoriteMoviesRef = collection(db, "favoriteMovies");
       const q = query(favoriteMoviesRef, where("id", "==", movieId), where("user_id", "==", user?.uid ?? ""));
       const querySnapshot = await getDocs(q);
-      
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         console.log("data", data)
-        if(parseInt(data.id) === parseInt(movieId)) setIsLiked(true)
+        if (parseInt(data.id) === parseInt(movieId)) setIsLiked(true)
         else setIsLiked(false)
       });
     }
     getFavoriteMovie()
   }, [route])
+  useEffect(() => {
+    const unsubcribe = setTimeout(() => {
+      if (notAllowLike) setNotAllowLike(false);
+    }, 1000)
+    return unsubcribe;
+  }, [notAllowLike])
   const handleChoosePerson = async (person) => {
     let fetchedPerson = await axiosInstance.get(`/person/${person.id}`)
     setChoosedPerson(fetchedPerson.data)
@@ -75,110 +82,123 @@ const MovieDetailScreen = ({ navigation, route }) => {
   // if (!movie) return <Text>Loading....</Text>
   if (!movie) return <Loading></Loading>
   return (
-    <ScrollView style={{ backgroundColor: 'white', }}>
+    <View>
+      <ScrollView style={{ backgroundColor: 'white', }}>
+        <HeroSection movie={movie} setOpenTrailer={setOpenTrailer} isLiked={isLiked} setIsLiked={setIsLiked} user={user} setNotAllowLike={setNotAllowLike}></HeroSection>
+        <View style={styles.container}>
+          <RelateInformation movie={movie}></RelateInformation>
+          <Overview movie={movie}></Overview>
+          <MainCast casts={credits?.cast} handleChoosePerson={handleChoosePerson}></MainCast>
+          <MainCrewTeam crews={credits?.crew} handleChoosePerson={handleChoosePerson}></MainCrewTeam>
+          <Companies companies={movie?.production_companies}></Companies>
+        </View>
 
-      <HeroSection movie={movie} setOpenTrailer={setOpenTrailer} isLiked={isLiked} setIsLiked={setIsLiked} user={user}></HeroSection>
-      <View style={styles.container}>
-        <RelateInformation movie={movie}></RelateInformation>
-        <Overview movie={movie}></Overview>
-        <MainCast casts={credits?.cast} handleChoosePerson={handleChoosePerson}></MainCast>
-        <MainCrewTeam crews={credits?.crew} handleChoosePerson={handleChoosePerson}></MainCrewTeam>
-        <Companies companies={movie?.production_companies}></Companies>
-      </View>
-
-      <ModalCustom modalVisible={openTrailer} setModalVisible={setOpenTrailer}>
-        <ScrollView>
-          {videos &&
-            videos?.map((video) => (
-              <YoutubePlayer
-                height={300}
-                videoId={video?.key}
-              />
-            ))
-          }
-        </ScrollView>
-      </ModalCustom>
-      <ModalCustom modalVisible={modalVisible} setModalVisible={setModalVisible}>
-        <ScrollView
-          style={{
-            marginBottom: 20
-          }}
-        >
-          <View
+        <ModalCustom modalVisible={openTrailer} setModalVisible={setOpenTrailer}>
+          <ScrollView>
+            {videos &&
+              videos?.map((video, index) => (
+                <View key={index}>
+                  <YoutubePlayer
+                    height={300}
+                    videoId={video?.key}
+                  />
+                </View>
+              ))
+            }
+          </ScrollView>
+        </ModalCustom>
+        <ModalCustom modalVisible={modalVisible} setModalVisible={setModalVisible}>
+          <ScrollView
             style={{
-              flexDirection: 'row'
+              marginBottom: 20
             }}
           >
-            <Image
-              source={{
-                uri: `https://image.tmdb.org/t/p/w500${choosedPerson?.profile_path}`
-              }}
-              style={{
-                width: 150,
-                height: 200,
-                borderRadius: 10
-              }}
-            >
-            </Image>
             <View
               style={{
-                paddingLeft: 10,
-                flex: 1
+                flexDirection: 'row'
               }}
             >
+              <Image
+                source={{
+                  uri: `https://image.tmdb.org/t/p/w500${choosedPerson?.profile_path}`
+                }}
+                style={{
+                  width: 150,
+                  height: 200,
+                  borderRadius: 10
+                }}
+              >
+              </Image>
+              <View
+                style={{
+                  paddingLeft: 10,
+                  flex: 1
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 25,
+                    fontWeight: 'bold',
+                    marginBottom: 5
+                  }}
+                >{choosedPerson?.name}</Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    color: 'gray',
+                    marginBottom: 5
+                  }}
+                >{choosedPerson?.known_for_department}</Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    color: 'gray',
+                    marginBottom: 5
+                  }}
+                >{moment().year() - moment(choosedPerson?.birthday).year()} years</Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    color: 'gray'
+                  }}
+                >{choosedPerson?.place_of_birth}</Text>
+              </View>
+            </View>
+            <View>
               <Text
                 style={{
                   fontSize: 25,
                   fontWeight: 'bold',
                   marginBottom: 5
                 }}
-              >{choosedPerson?.name}</Text>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: 'gray',
-                  marginBottom: 5
-                }}
-              >{choosedPerson?.known_for_department}</Text>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: 'gray',
-                  marginBottom: 5
-                }}
-              >{moment().year() - moment(choosedPerson?.birthday).year()} years</Text>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: 'gray'
-                }}
-              >{choosedPerson?.place_of_birth}</Text>
+              >Biography</Text>
+              <Text>{choosedPerson?.biography}</Text>
             </View>
-          </View>
-          <View>
-            <Text
-              style={{
-                fontSize: 25,
-                fontWeight: 'bold',
-                marginBottom: 5
-              }}
-            >Biography</Text>
-            <Text>{choosedPerson?.biography}</Text>
-          </View>
-        </ScrollView>
-      </ModalCustom>
-    </ScrollView>
+          </ScrollView>
+        </ModalCustom>
+      </ScrollView>
+      <SnackBar
+        visible={notAllowLike}
+        textMessage="PLEASE LOGIN!"
+        actionHandler={() => navigation.navigate("Authentication", { screen: 'Login' })}
+        actionText="LOGIN"
+        autoHidingTime={1000}
+      // distanceCallback = {() => setNotAllowLike(pre => !pre)}
+      />
+
+    </View>
   )
 }
-const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked, user }) => {
+const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked, user, setNotAllowLike }) => {
   const [isLiking, setIsLiking] = useState(false);
   const handleLikeMovie = () => {
-    if(!user?.uid) {
-      Toast.show({
-        type: 'error',
-        text1: 'Please login 👋👋👋',
-        // text2: 'This is some something 👋'
-      });
+    if (!user?.uid) {
+      // Toast.show({
+      //   type: 'error',
+      //   text1: 'Please login 👋👋👋',
+      //   // text2: 'This is some something 👋'
+      // });
+      setNotAllowLike(true)
       return false;
     } else {
       setIsLiking(true)
@@ -234,6 +254,7 @@ const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked, user }) => {
           iconStyle={{ color: 'red' }}
         ></Icon>}
       </Pressable>
+
       <Pressable style={styles.playBtn} onPress={() => setOpenTrailer(true)}>
         <LottieView
           style={{ height: 100 }}
@@ -286,15 +307,15 @@ const Overview = ({ movie }) => {
   return (
     <View>
       <Text style={styles.relateInfoTitle}>Overview</Text>
-      <Text style={styles.relateInfoText}>
+      {!isReadMore && <Text style={styles.relateInfoText}>
         {
           numWords > 25
             ? truncateText(movie?.overview, 25)
             : movie?.overview
         }
-      </Text>
+      </Text>}
       {isReadMore && <Text style={styles.relateInfoText}>{movie?.overview}</Text>}
-      <View
+      {numWords > 25 && (<View
         style={{
           flexDirection: 'row',
           justifyContent: 'center'
@@ -320,7 +341,7 @@ const Overview = ({ movie }) => {
           iconRight={true}
           onPress={() => setIsReadMore(pre => !pre)}
         ></Button>
-      </View>
+      </View>)}
     </View>
   )
 }
@@ -328,7 +349,7 @@ const MainCast = ({ casts, handleChoosePerson }) => {
   const [carousel, setCarousel] = useState(null);
   const renderItem = ({ item, index }) => {
     return (
-      <CastItem cast={item} handleChoosePerson={handleChoosePerson}></CastItem>
+      <CastItem cast={item} handleChoosePerson={handleChoosePerson} key={index}></CastItem>
     );
   }
   return (
@@ -338,29 +359,32 @@ const MainCast = ({ casts, handleChoosePerson }) => {
       }}
     >
       <Text style={styles.relateInfoTitle}>Main cast</Text>
-      {casts && <Carousel
-        ref={(c) => setCarousel(c)}
-        data={casts}
-        renderItem={renderItem}
-        sliderWidth={600}
-        itemWidth={200}
-      // activeSlideOffset={3}
-      // firstItem={1}
-      // callbackOffsetMargin={3}
-      />}
+      <ScrollView horizontal={true}>
+        {
+          casts &&
+          casts?.map((cast, index) => (
+            <CastItem cast={cast} handleChoosePerson={handleChoosePerson} key={index}></CastItem>
+          ))
+        }
+      </ScrollView>
     </View>
   )
 }
 const CastItem = ({ cast, handleChoosePerson }) => {
   return (
     <View
+      style={{
+        marginRight: 15,
+        width: 200,
+        paddingHorizontal: 20,
+        backgroundColor: 'whitesmoke',
+      }}
     >
       <Pressable
         onPress={() => handleChoosePerson(cast)}
       >
         <View
           style={{
-            backgroundColor: 'whitesmoke',
             borderRadius: 5,
             height: 250,
             justifyContent: 'center',
@@ -389,7 +413,7 @@ const MainCrewTeam = ({ crews, handleChoosePerson }) => {
   const [carousel, setCarousel] = useState(null);
   const renderItem = ({ item, index }) => {
     return (
-      <CrewItem crew={item} handleChoosePerson={handleChoosePerson}></CrewItem>
+      <CrewItem crew={item} handleChoosePerson={handleChoosePerson} key={index}></CrewItem>
     );
   }
   return (
@@ -399,22 +423,27 @@ const MainCrewTeam = ({ crews, handleChoosePerson }) => {
       }}
     >
       <Text style={styles.relateInfoTitle}>Main crews</Text>
-      {crews && <Carousel
-        ref={(c) => setCarousel(c)}
-        data={crews}
-        renderItem={renderItem}
-        sliderWidth={600}
-        itemWidth={200}
-      // activeSlideOffset={3}
-      // firstItem={1}
-      // callbackOffsetMargin={3}
-      />}
+      <ScrollView horizontal={true}>
+        {
+          crews &&
+          crews?.map((crew, index) => (
+            <CrewItem crew={crew} handleChoosePerson={handleChoosePerson} key={index}></CrewItem>
+          ))
+        }
+      </ScrollView>
     </View>
   )
 }
 const CrewItem = ({ crew, handleChoosePerson }) => {
   return (
-    <View>
+    <View
+      style={{
+        marginRight: 15,
+        width: 200,
+        paddingHorizontal: 20,
+        backgroundColor: 'whitesmoke',
+      }}
+    >
       <Pressable
         onPress={() => handleChoosePerson(crew)}
       >
@@ -462,12 +491,13 @@ const Companies = ({ companies }) => {
         }}
       >
         {
-          companies?.map((company) => (
+          companies?.map((company, index) => (
             <View
               style={{
                 flexBasis: 200,
                 marginBottom: 10
               }}
+              key={index}
             >
               <Image
                 source={{
