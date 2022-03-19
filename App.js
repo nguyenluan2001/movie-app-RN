@@ -16,6 +16,7 @@ import LoginScreen from './screens/LoginScreen';
 import Toast from 'react-native-toast-message';
 import RegisterScreen from './screens/RegisterScreen';
 import AuthenticateNavigator from './navigators/AuthenticationNavigator';
+import MoreNavigator from './navigators/MoreNavigator';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,7 +45,7 @@ export default function App() {
               tabBarShowLabel: true,
               headerShown: false
             }
-          } 
+          }
           />
           <Tab.Screen name="Search" component={SearchNavigator} options={
             {
@@ -70,7 +71,28 @@ export default function App() {
             {
               tabBarButton: props => null,
               headerShown: false,
-              tabBarStyle:{display:'none'}
+              tabBarStyle: { display: 'none' }
+            }
+          } />
+          <Tab.Screen name="More" component={MoreNavigator} options={
+            {
+
+              tabBarIcon: ({ focused }) => {
+                return <Icon
+                  name="menu"
+                  type="feather"
+                  color={focused ? '#ff725b' : 'black'}
+                ></Icon>
+              },
+              tabBarLabel: ({ focused }) => {
+                return <Text
+                  style={{
+                    color: focused ? '#ff725b' : 'black'
+                  }}
+                >More</Text>
+              },
+              tabBarShowLabel: true,
+              headerShown: false,
             }
           } />
           <Tab.Screen name="AccountTab" component={AccountNavigator} options={
@@ -93,24 +115,6 @@ export default function App() {
               headerShown: false,
             }
           } />
-          {/* <Tab.Screen name="Login" component={LoginScreen} options={
-            {
-
-              tabBarButton: props => null,
-              headerShown: false,
-              tabBarStyle:{display:'none'}
-
-            }
-          } />
-          <Tab.Screen name="Register" component={RegisterScreen} options={
-            {
-
-              tabBarButton: props => null,
-              headerShown: false,
-              tabBarStyle:{display:'none'}
-
-            }
-          } /> */}
         </Tab.Navigator>
       </NavigationContainer>
       <Toast />

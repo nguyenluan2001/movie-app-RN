@@ -2,7 +2,7 @@ import { LogBox } from 'react-native';
 
 LogBox.ignoreLogs(['Setting a timer']);
 
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Pressable, TouchableOpacity } from 'react-native'
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { axiosInstance } from '../utils/axios';
 import { useMovieDetail } from '../hooks/useMovieDetail';
@@ -14,15 +14,19 @@ import moment from 'moment';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import Loading from '../components/Loading';
 import LottieView from 'lottie-react-native';
-import { collection, addDoc, getDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDoc, query, where, getDocs, onSnapshot } from "firebase/firestore";
+// import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
+
 import { db } from "../utils/firebase";
 import { useSelector } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component'
+import { isEmpty } from "lodash";
 
 const MovieDetailScreen = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
   const [videos, setVideos] = useState(null);
+  const [relatedMovies, setRelatedMovies] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [openTrailer, setOpenTrailer] = useState(false);
   const [choosedPerson, setChoosedPerson] = useState(null);
@@ -36,6 +40,9 @@ const MovieDetailScreen = ({ navigation, route }) => {
         const fetchedMovie = await axiosInstance.get(`/movie/${movieId}`)
         const fetchedCredits = await axiosInstance.get(`/movie/${movieId}/credits`)
         const fetchedvideos = await axiosInstance.get(`/movie/${movieId}/videos`)
+        const fetchedRelatedMovies = await axiosInstance.get(`/movie/${movieId}/similar`, {
+          page: 100
+        })
         // console.log('movie', fetchedMovie.data)
         navigation.setOptions({
           title: original_title,
@@ -47,6 +54,8 @@ const MovieDetailScreen = ({ navigation, route }) => {
         else setCredits(null)
         if (fetchedvideos) setVideos(fetchedvideos.data.results)
         else setVideos(null)
+        if (fetchedRelatedMovies) setRelatedMovies(fetchedRelatedMovies.data.results)
+        else setRelatedMovies(null)
       } catch (error) {
         console.log("error", error.message)
       }
@@ -54,20 +63,41 @@ const MovieDetailScreen = ({ navigation, route }) => {
     fetchMovie()
   }, [navigation, route])
   useEffect(() => {
-    const getFavoriteMovie = async () => {
-      const favoriteMoviesRef = collection(db, "favoriteMovies");
-      const q = query(favoriteMoviesRef, where("id", "==", movieId), where("user_id", "==", user?.uid ?? ""));
-      const querySnapshot = await getDocs(q);
+    // const getFavoriteMovie = async () => {
+    //   const favoriteMoviesRef = collection(db, "favoriteMovies");
+    //   const q = query(favoriteMoviesRef, where("id", "==", movieId), where("user_id", "==", user?.uid ?? ""));
+    //   const querySnapshot = await getDocs(q);
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        console.log("data", data)
-        if (parseInt(data.id) === parseInt(movieId)) setIsLiked(true)
+    //   querySnapshot.forEach((doc) => {
+    //     const data = doc.data();
+    //     console.log("data", data)
+    //     if (parseInt(data.id) === parseInt(movieId)) setIsLiked(true)
+    //     else setIsLiked(false)
+    //   });
+    // }
+    // getFavoriteMovie()
+
+    let unsub;
+    if (user && movie) {
+      console.log("user_id", user?.uid)
+      console.log("movieId", movieId)
+      const q = query(collection(db, "favoriteMovies"), where("user_id", "==", user?.uid));
+
+      unsub = onSnapshot(q, (querySnapshot) => {
+        // console.log(querySnapshot?.[0]?.data())
+        let favoriteMovies = [];
+        querySnapshot.forEach((doc) => {
+          console.log("doc", doc.data())
+          favoriteMovies.push(doc.data())
+        });
+        let likedMovie = favoriteMovies?.some((item) => parseInt(item.id) === parseInt(movieId))
+        if (likedMovie) setIsLiked(true)
         else setIsLiked(false)
       });
+
     }
-    getFavoriteMovie()
-  }, [route])
+    return unsub;
+  }, [navigation])
   useEffect(() => {
     const unsubcribe = setTimeout(() => {
       if (notAllowLike) setNotAllowLike(false);
@@ -91,6 +121,7 @@ const MovieDetailScreen = ({ navigation, route }) => {
           <MainCast casts={credits?.cast} handleChoosePerson={handleChoosePerson}></MainCast>
           <MainCrewTeam crews={credits?.crew} handleChoosePerson={handleChoosePerson}></MainCrewTeam>
           <Companies companies={movie?.production_companies}></Companies>
+          <RelatedMovies movies={relatedMovies} navigation={navigation}></RelatedMovies>
         </View>
 
         <ModalCustom modalVisible={openTrailer} setModalVisible={setOpenTrailer}>
@@ -193,18 +224,14 @@ const HeroSection = ({ movie, setOpenTrailer, isLiked, setIsLiked, user, setNotA
   const [isLiking, setIsLiking] = useState(false);
   const handleLikeMovie = () => {
     if (!user?.uid) {
-      // Toast.show({
-      //   type: 'error',
-      //   text1: 'Please login 👋👋👋',
-      //   // text2: 'This is some something 👋'
-      // });
       setNotAllowLike(true)
       return false;
     } else {
       setIsLiking(true)
       addDoc(collection(db, "favoriteMovies"), {
         id: movie.id,
-        name: movie.original_title,
+        original_title: movie.original_title,
+        poster_path: movie.poster_path,
         user_id: user?.uid
       }).then(async (docRef) => {
         setIsLiking(false)
@@ -514,6 +541,61 @@ const Companies = ({ companies }) => {
         }
       </View>
     </View>
+  )
+}
+const RelatedMovies = ({ movies, navigation }) => {
+  return (
+    <View>
+      <Text style={styles.relateInfoTitle}>Related Movies</Text>
+      <ScrollView horizontal={true}>
+        {
+          movies &&
+          movies?.map((movie, index) => (
+            <MovieItem movie={movie} navigation={navigation} key={index}></MovieItem>
+          ))
+        }
+      </ScrollView>
+    </View>
+  )
+}
+const MovieItem = ({ movie, navigation }) => {
+  return (
+    <Pressable
+      onPress={() => navigation.push('MovieDetail', {
+        movieId: movie.id,
+        original_title: movie?.original_title
+      })}
+      style={{
+        marginRight: 15,
+        width: 200,
+        paddingHorizontal: 20,
+        backgroundColor: 'whitesmoke',
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: 'whitesmoke',
+          borderRadius: 5,
+          height: 250,
+          width: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingBottom: 30
+        }}
+      >
+        <Image
+          source={{
+            uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`
+          }}
+          style={{
+            width: 200,
+            height: 200,
+          }}
+        >
+        </Image>
+        <Text style={styles.castName}>{movie?.original_title}</Text>
+      </View>
+    </Pressable>
   )
 }
 const styles = StyleSheet.create({
