@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState, flushSync, useRef } from 'react'
 import { Text, View, ScrollView, Pressable, StyleSheet } from 'react-native'
-import { Button, Icon } from 'react-native-elements'
+import { Avatar, Button, Icon } from 'react-native-elements'
 import { useDispatch, useSelector } from 'react-redux';
 import MovieGrid from '../components/MovieGrid';
 import MovieItem from '../components/MovieItem';
@@ -46,16 +46,19 @@ function HomeScreen({ navigation }) {
                     }}
                     onPress={() => testFirebase()}
                 >
-                    <Icon
-                        name='user-circle-o'
-                        type='font-awesome'
-                        color='black'
-                        size={30}
-                    />
+                    <Avatar
+                        size={40}
+                        source={user.photoURL ? { uri: user.photoURL } : {}}
+                        rounded
+                        icon={{ name: 'user', type: 'font-awesome' }}
+                        iconStyle={{ color: '#999999' }}
+                        containerStyle={{ backgroundColor: '#cfcfcf', alignSelf: 'center', marginBottom: 20 }}
+                    >
+                    </Avatar>
                 </Pressable>
             )
         })
-    }, [navigation])
+    }, [navigation, user])
     useEffect(() => {
         dispatch(fetchMovieGenre());
         dispatch(fetchTVGenre());

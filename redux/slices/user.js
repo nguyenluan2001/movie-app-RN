@@ -7,9 +7,9 @@ const user = createSlice({
             return action.payload;
         },
         updateProfile:(state, action) => {
-            let {displayName, email} = action.payload;
+            let {displayName, photoURL} = action.payload;
             state.displayName = displayName;
-            state.email = email;
+            state.photoURL = photoURL;
         },
         logout: () => {
             return {};

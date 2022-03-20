@@ -7,8 +7,8 @@ const GenreList = ({genres, navigation}) => {
     <ScrollView>
      {
          genres &&
-         genres?.map((genre) => (
-             <TouchableOpacity onPress={() => navigation.navigate("SearchResult",{
+         genres?.map((genre, index) => (
+             <TouchableOpacity key={index} onPress={() => navigation.navigate("SearchResult",{
                  genre_id: genre.id
              })}>
                  <Text style={styles.genreItem} >{genre?.name}</Text>

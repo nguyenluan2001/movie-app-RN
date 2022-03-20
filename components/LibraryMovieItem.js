@@ -64,7 +64,7 @@ export default LibraryMovieItem
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 10,
+        // paddingHorizontal: 10,
         width: windowWidth,
     },
     content: {
@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 0.5,
         borderBottomColor: 'rgba(0,0,0,0.3)',
         paddingVertical: 10,
+        width: '90%',
+        alignSelf: 'center'
     },
     poster: {
         width: 100,
@@ -82,6 +84,7 @@ const styles = StyleSheet.create({
     wp_title: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        paddingHorizontal: 10,
         flex: 1,
     },
     original_title: {

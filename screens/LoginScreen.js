@@ -34,7 +34,7 @@ const LoginScreen = ({ navigation }) => {
             displayName: user.displayName, 
             email: user.email, 
             phoneNumber: user.phoneNumber, 
-            photoURL: user.phoneNumber,
+            photoURL: user.photoURL,
             uid: user.uid
           }
           // console.log("userData", userData)

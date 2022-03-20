@@ -78,19 +78,18 @@ const MovieDetailScreen = ({ navigation, route }) => {
     // getFavoriteMovie()
 
     let unsub;
-    if (user && movie) {
-      console.log("user_id", user?.uid)
-      console.log("movieId", movieId)
+    if (user) {
       const q = query(collection(db, "favoriteMovies"), where("user_id", "==", user?.uid));
 
       unsub = onSnapshot(q, (querySnapshot) => {
-        // console.log(querySnapshot?.[0]?.data())
+        console.log(querySnapshot?.[0]?.data())
         let favoriteMovies = [];
         querySnapshot.forEach((doc) => {
           console.log("doc", doc.data())
           favoriteMovies.push(doc.data())
         });
         let likedMovie = favoriteMovies?.some((item) => parseInt(item.id) === parseInt(movieId))
+        console.log("likedMovie", likedMovie)
         if (likedMovie) setIsLiked(true)
         else setIsLiked(false)
       });
