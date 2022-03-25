@@ -8,7 +8,7 @@ import { Text, useTheme } from 'react-native-elements';
 const ShowMovies = ({ movies, navigation, handleLoadMore, isLoadingMovie, title="Most Popular" }) => {
     const [layout, setLayout] = useState(1);
     return (
-        <ScrollView>
+        <ScrollView style={{backgroundColor: 'white'}}>
             <ScrollView>
                 <View
                     style={{

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import { Button, Input } from 'react-native-elements'
 import { useGenres } from '../hooks/useGenres'
 import { axiosInstance } from '../utils/axios'
@@ -8,6 +8,11 @@ import GenreList from '../components/GenreList'
 const SearchScreen = ({ navigation }) => {
   const [genres, setGenres] = useState(null);
   const [keyWord, setKeyWord] = useState(null);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: 'Search'
+    })
+  }, [navigation])
   useEffect(() => {
     const fetchGenres = async () => {
       try {
