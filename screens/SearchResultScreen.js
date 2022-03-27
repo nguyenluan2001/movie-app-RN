@@ -83,7 +83,7 @@ const SearchResultScreen = ({ navigation, route }) => {
     return (
         <View>
             <ScrollView ref={ref}>
-                <ShowMovies movies={movies} navigation={navigation} title={keyWord && keyWord} isLoadingMovie={isLoadingMovie} handleLoadMore={handleLoadMore}></ShowMovies>
+                <ShowMovies movies={movies} navigation={navigation} title={keyWord && keyWord} isLoadingMovie={isLoadingMovie} handleLoadMore={handleLoadMore} isSearch={true}></ShowMovies>
             </ScrollView>
             <Pressable style={styles.scrollBtn} onPress={() => handleScrollTop()}>
                 <Icon

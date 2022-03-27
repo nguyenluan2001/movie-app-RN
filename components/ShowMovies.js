@@ -5,7 +5,7 @@ import MovieList from './MovieList';
 import MovieGrid from './MovieGrid';
 import { Text, useTheme } from 'react-native-elements';
 
-const ShowMovies = ({ movies, navigation, handleLoadMore, isLoadingMovie, title="Most Popular" }) => {
+const ShowMovies = ({ isSearch, movies, navigation, handleLoadMore, isLoadingMovie, title="Most Popular" }) => {
     const [layout, setLayout] = useState(1);
     return (
         <ScrollView style={{backgroundColor: 'white'}}>
@@ -40,8 +40,8 @@ const ShowMovies = ({ movies, navigation, handleLoadMore, isLoadingMovie, title=
                             onPress={() => setLayout(2)} />
                     </View>
                 </View>
-                {layout === 1 && <MovieList movies={movies} navigation={navigation}></MovieList>}
-                {layout === 2 && <MovieGrid movies={movies} navigation={navigation}></MovieGrid>}
+                {layout === 1 && <MovieList isSearch={isSearch} movies={movies} navigation={navigation}></MovieList>}
+                {layout === 2 && <MovieGrid isSearch={isSearch} movies={movies} navigation={navigation}></MovieGrid>}
             </ScrollView>
             <Button title="Load more" buttonStyle={styles.loadMoreBtn} loading={isLoadingMovie}  onPress={() => handleLoadMore()}></Button>
 

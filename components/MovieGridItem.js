@@ -2,9 +2,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { Image } from 'react-native-elements'
 
-const MovieGridItem = ({ movie, navigation }) => {
+const MovieGridItem = ({ isSearch, movie, navigation }) => {
     return (
-        <Pressable style={styles.container} onPress={() => navigation.navigate("MovieDetail", {
+        <Pressable style={styles.container} onPress={() => navigation.navigate(isSearch? 'SearchMovieDetail':"MovieDetail", {
             movieId: movie.id,
             original_title: movie?.original_title
         })}>

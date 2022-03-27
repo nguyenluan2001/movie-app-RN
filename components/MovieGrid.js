@@ -2,12 +2,12 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import MovieGridItem from './MovieGridItem'
 
-const MovieGrid = ({movies, navigation}) => {
+const MovieGrid = ({isSearch, movies, navigation}) => {
   return (
     <View style={styles.container}>
         {
                 movies && (
-                    movies?.map((movie) => <MovieGridItem movie={movie} key={movie?.id} navigation={navigation}></MovieGridItem>)
+                    movies?.map((movie) => <MovieGridItem isSearch={isSearch} movie={movie} key={movie?.id} navigation={navigation}></MovieGridItem>)
                 )
             }
     </View>

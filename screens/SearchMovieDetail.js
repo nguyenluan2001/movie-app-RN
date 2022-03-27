@@ -1,4 +1,4 @@
-import { FlatList, LogBox } from 'react-native';
+import { LogBox } from 'react-native';
 
 LogBox.ignoreLogs(['Setting a timer']);
 
@@ -22,11 +22,10 @@ import { useSelector } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component'
 import { isEmpty } from "lodash";
 
-const MovieDetailScreen = ({ navigation, route }) => {
+const SearchMovieDetail = ({ navigation, route }) => {
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
   const [videos, setVideos] = useState(null);
-  const [images, setImages] = useState(null);
   const [relatedMovies, setRelatedMovies] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [openTrailer, setOpenTrailer] = useState(false);
@@ -44,7 +43,6 @@ const MovieDetailScreen = ({ navigation, route }) => {
         const fetchedRelatedMovies = await axiosInstance.get(`/movie/${movieId}/similar`, {
           page: 100
         })
-        const fetchedImages = await axiosInstance.get(`/movie/${movieId}/images`)
         // console.log('movie', fetchedMovie.data)
         navigation.setOptions({
           title: original_title,
@@ -58,8 +56,6 @@ const MovieDetailScreen = ({ navigation, route }) => {
         else setVideos(null)
         if (fetchedRelatedMovies) setRelatedMovies(fetchedRelatedMovies.data.results)
         else setRelatedMovies(null)
-        if (fetchedImages) setImages(fetchedImages.data.backdrops);
-        else setImages(null)
       } catch (error) {
         console.log("error", error.message)
       }
@@ -121,7 +117,6 @@ const MovieDetailScreen = ({ navigation, route }) => {
         <View style={styles.container}>
           <RelateInformation movie={movie}></RelateInformation>
           <Overview movie={movie}></Overview>
-          <ListImage images={images}></ListImage>
           <MainCast casts={credits?.cast} handleChoosePerson={handleChoosePerson}></MainCast>
           <MainCrewTeam crews={credits?.crew} handleChoosePerson={handleChoosePerson}></MainCrewTeam>
           <Companies companies={movie?.production_companies}></Companies>
@@ -373,35 +368,6 @@ const Overview = ({ movie }) => {
           onPress={() => setIsReadMore(pre => !pre)}
         ></Button>
       </View>)}
-    </View>
-  )
-}
-const ListImage = ({ images }) => {
-  console.log("images", images)
-  return (
-    <View>
-      <Text style={styles.relateInfoTitle}>Images</Text>
-      <ScrollView horizontal={true}>
-        {
-          images &&
-          images?.map((image, index) => (
-            <View
-              style={{
-                paddingHorizontal: 10
-              }}
-            >
-              <Image
-                source={{
-                  uri: `https://image.tmdb.org/t/p/w500${image.file_path}`
-                }}
-                style={{
-                  width: 200,
-                  height: 200/image.aspect_ratio
-                }}/>
-            </View>
-          ))
-        }
-      </ScrollView>
     </View>
   )
 }
@@ -665,10 +631,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
-    flex: 1,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    overflow: 'hidden',
+    flex: 1
   },
   relateInfoContainer: {
     flexDirection: 'row',
@@ -689,4 +652,4 @@ const styles = StyleSheet.create({
     color: 'gray'
   }
 })
-export default MovieDetailScreen
+export default SearchMovieDetail

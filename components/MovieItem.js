@@ -2,7 +2,7 @@ import { View, Text, Touchable, TouchableOpacity, Image, StyleSheet } from 'reac
 import React, { useEffect, useState } from 'react'
 import { getYearRelease, getLanguage } from '../utils/lib';
 import { useSelector } from 'react-redux';
-const MovieItem = ({ movie, navigation }) => {
+const MovieItem = ({ isSearch, movie, navigation }) => {
     const movieGenres = useSelector((state) => state.genre.movieGenres);
     const [genres, setGenres] = useState(null);
 
@@ -14,7 +14,7 @@ const MovieItem = ({ movie, navigation }) => {
     }, [movieGenres, movie])
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.navigate('MovieDetail', {
+            <TouchableOpacity onPress={() => navigation.navigate(isSearch? 'SearchMovieDetail':'MovieDetail', {
                 movieId: movie.id,
                 original_title: movie?.original_title
             })}>
@@ -35,7 +35,7 @@ const MovieItem = ({ movie, navigation }) => {
             >
                 <View>
                     <View style={{ flexDirection: 'row' }}>
-                        <TouchableOpacity onPress={() => navigation.navigate('MovieDetail', {
+                        <TouchableOpacity onPress={() => navigation.navigate(isSearch? 'SearchMovieDetail':'MovieDetail', {
                             movieId: movie.id,
                             original_title: movie?.original_title
                         })}>
