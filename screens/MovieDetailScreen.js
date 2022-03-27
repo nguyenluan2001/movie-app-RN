@@ -377,7 +377,6 @@ const Overview = ({ movie }) => {
   )
 }
 const ListImage = ({ images }) => {
-  console.log("images", images)
   return (
     <View>
       <Text style={styles.relateInfoTitle}>Images</Text>
@@ -389,6 +388,7 @@ const ListImage = ({ images }) => {
               style={{
                 paddingHorizontal: 10
               }}
+              key={index}
             >
               <Image
                 source={{
